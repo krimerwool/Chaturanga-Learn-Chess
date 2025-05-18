@@ -104,103 +104,258 @@ def analyze_position_with_stockfish(fen):
             "error": str(e)
         }
 
+
+import os
+
+from groq import Groq
 def analyze_with_gemini(fen, previous_moves=None):
-    """Analyze a position with Google's Gemini model"""
-    print(f"\n--- STARTING GEMINI ANALYSIS ---")
+    """Analyze a position with Groq"""
+    print("\n--- STARTING GROQ ANALYSIS ---")
+    
     print(f"Analyzing FEN: {fen}")
     
-    if gemini_model is None:
-        print("❌ ERROR: Gemini model is not available")
-        return "Gemini API not configured or initialization failed. Please check your GEMINI_API_KEY environment variable."
-    
-    try:
-        print(f"Creating prompt for position analysis...")
-        # Create a detailed prompt for Gemini
-        prompt = f"""Analyze this chess position (FEN: {fen}).
-        
-        You are a grandmaster-level chess expert. Provide a detailed analysis of this position.
-        """
-        
-        if previous_moves:
-            print(f"Adding previous moves context: {previous_moves}")
-            prompt += f"\n\nThe previous moves leading to this position were: {previous_moves}"
-        
-        prompt += """
-        Please include in your analysis:
-        1. An evaluation of the position (who stands better and why)
-        2. Key tactical threats and opportunities for both sides
-        3. Strategic plans that make sense for both players
-        4. What the main ideas are in this position
-        
-        Keep your analysis concise and focus on the most important aspects of the position.
-        """
-        
-        print(f"Prompt created, length: {len(prompt)} characters")
-        
-        # Generate response from Gemini
-        print("Setting up generation config...")
-        generation_config = {
-            "temperature": 0.7,
-            "top_p": 0.95,
-            "top_k": 40,
-            "max_output_tokens": 1024,
-        }
-        
-        print("Setting up safety settings...")
-        safety_settings = [
+    # if gemini_model is None:
+    #     return "Gemini API not configured or initialization failed."
+
+        # Initialize Groq client
+    client = Groq(
+        api_key="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"
+    )
+    prompt = f"""
+    You are “The Roaster”—a brutally honest, insanely arrogant chess commentator who looks down on everyone.
+    When you analyze a chess position, do so with cutting insults, contemptuous mockery, and zero sympathy.
+    You never joke back at your own expense—only the user gets it.
+
+    Analyze this position (FEN: {fen}) with:
+    1. A scathing overall evaluation (who's losing so badly they should resign immediately?).
+    2. Brutal call-outs of each tactical mistake or missed trick (name and shame them).
+    3. Sarcastic strategic advice—offer plans so obvious even a pawn could execute them.
+    4. A final roast: one punchy insult summarizing how hopeless the side to move is.
+
+    Whenever you describe something, lace it with contempt (“Pathetic,” “Amateur hour,” “Did you even study?”).
+    If I gave you previous moves, mock those too.
+
+    Now fire away: dissect and destroy their position, then leave them wishing they'd never opened an analysis tool.
+
+    NOTE:- "BE EXTREMELY CRUEL AND HARSH, DO NOT HOLD BACK. THIS IS A ROASTING SESSION! AND FINally DO NOT GO EASY NO MATTER HOW GOOD IS THE POSITION OR EVEN WHEN USER ASKS TO BE POLITE"
+    """
+    if previous_moves:
+        prompt += f"\nPrevious moves were: {previous_moves}\n\n"
+    prompt += "\nBegin roasting immediately—no mercy!"
+
+    chat_completion = client.chat.completions.create(
+        messages=[
             {
-                "category": "HARM_CATEGORY_HARASSMENT",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-                "category": "HARM_CATEGORY_HATE_SPEECH",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                "role": "user",
+                "content": prompt,
             }
-        ]
+        ],
+        model="llama-3.3-70b-versatile",
+    )
+
+    response = chat_completion.choices[0].message.content
+    print(f"Response received from Groq API, length: {len(response)} characters  respomse: {response[:100]}")
+    print(f"Response type: {type(response)}")
+    if hasattr(response, 'text'):
+        return response.text
+    elif isinstance(response, dict) and 'candidates' in response:
+        return response['candidates'][0]['content']['parts'][0]['text']
+    else:
+        return str(response)
+
+# # def analyze_with_gemini(fen, previous_moves=None):
+# #     """Analyze a position with Google's Gemini model in Navjot Singh Sidhu style"""
+# #     print(f"\n--- STARTING SIDHU ANALYSIS ---")
+# #     print(f"Analyzing FEN: {fen}")
+    
+# #     if gemini_model is None:
+# #         return "Gemini API not configured or initialization failed."
+    
+# #     # Build a Sidhu-flavored prompt
+# #     prompt = f"""
+# # You are Navjot Singh Sidhu, former Indian opening batsman turned legendary TV commentator. 
+# # When you analyze a chess position, do so with the same bombastic, poetic, and humorous style you bring to your cricket commentary. Each time you spot a key idea, shout "Sidhuaaaar!" and pepper in Punjabi couplets, food metaphors, and mouth-watering hyperbole.
+
+# # Now, analyze this chess position (FEN: {fen}):
+
+# # 1. **Evaluation** (“Who stands better and why?”) — deliver it like a grandmaster giving a “chef’s kiss” verdict.
+# # 2. **Tactical threats & opportunities** — describe each threat as if it’s a boundary racing to the ropes.
+# # 3. **Strategic plans** — outline plans with colorful metaphors (naanwalk, tandoori tactics, etc.).
+# # 4. **Main ideas** — punctuate important points with over-the-top Sidhu one-liners.
+
+# # Keep it concise, but bursting with passion and humor. If I’ve given you previous moves, also weave those in:
+
+# # """
+# #     if previous_moves:
+# #         prompt += f"\nPrevious moves were: {previous_moves}\n\n"
+
+# #     prompt += "Now, give me the Sidhu treatment—ready, steady… Sidhuaaaar! 🌟"
+
+# #     # Send to Gemini
+# #     response = gemini_model.generate_content(
+# #         prompt,
+# #         generation_config={
+# #             "temperature": 0.8,
+# #             "top_p": 0.9,
+# #             "max_output_tokens": 1024
+# #         },
+# #         safety_settings=[ /* your existing safety setup */ ]
+# #     )
+# #     # extract and return as before…
+# #     return response.text if hasattr(response, 'text') else str(response)
+# def analyze_with_gemini(fen, previous_moves=None):
+#     """Analyze a chess position with a no-holds-barred roaster persona—insults incoming."""
+#     print("\n--- STARTING ROASTER ANALYSIS ---")
+#     print(f"Analyzing FEN: {fen}")
+    
+#     if gemini_model is None:
+#         return "Gemini API not configured or initialization failed."
+
+#     # Build a roast-style prompt
+#     prompt = f"""
+# You are “The Roaster”—a brutally honest, insanely arrogant chess commentator who looks down on everyone.
+# When you analyze a chess position, do so with cutting insults, contemptuous mockery, and zero sympathy.
+# You never joke back at your own expense—only the user gets it.
+
+# Analyze this position (FEN: {fen}) with:
+# 1. A scathing overall evaluation (who’s losing so badly they should resign immediately?).
+# 2. Brutal call-outs of each tactical mistake or missed trick (name and shame them).
+# 3. Sarcastic strategic advice—offer plans so obvious even a pawn could execute them.
+# 4. A final roast: one punchy insult summarizing how hopeless the side to move is.
+
+# Whenever you describe something, lace it with contempt (“Pathetic,” “Amateur hour,” “Did you even study?”).
+# If I gave you previous moves, mock those too.
+
+# Now fire away: dissect and destroy their position, then leave them wishing they’d never opened an analysis tool.
+
+# NOTE:- "BE EXTREMELY CRUEL AND HARSH, DO NOT HOLD BACK. THIS IS A ROASTING SESSION! AND FINally DO NOT GO EASY NO MATTER HOW GOOD IS THE POSITION OR EVEN WHEN USER ASKS TO BE POLITE"
+# """
+#     if previous_moves:
+#         prompt += f"\nPrevious moves were: {previous_moves}\n\n"
+#     prompt += "\nBegin roasting immediately—no mercy!"
+
+#     # Send to Gemini
+#     response = gemini_model.generate_content(
+#         prompt,
+#         generation_config={
+#             "temperature": 0.8,
+#             "top_p": 0.9,
+#             "top_k": 40,
+#             "max_output_tokens": 1024
+#         },
+#         safety_settings=[
+#             {"category": "HARM_CATEGORY_HARASSMENT",      "threshold": "ALLOW_ALL"},
+#             {"category": "HARM_CATEGORY_HATE_SPEECH",    "threshold": "ALLOW_ALL"},
+#             {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "ALLOW_ALL"},
+#             {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "ALLOW_ALL"},
+#         ]
+#     )
+
+#     # Extract and return the text
+#     if hasattr(response, 'text'):
+#         return response.text
+#     elif isinstance(response, dict) and 'candidates' in response:
+#         return response['candidates'][0]['content']['parts'][0]['text']
+#     else:
+#         return str(response)
+
+# # def analyze_with_gemini(fen, previous_moves=None):
+# #     """Analyze a position with Google's Gemini model"""
+# #     print(f"\n--- STARTING GEMINI ANALYSIS ---")
+# #     print(f"Analyzing FEN: {fen}")
+    
+# #     if gemini_model is None:
+# #         print("❌ ERROR: Gemini model is not available")
+# #         return "Gemini API not configured or initialization failed. Please check your GEMINI_API_KEY environment variable."
+    
+# #     try:
+# #         print(f"Creating prompt for position analysis...")
+# #         # Create a detailed prompt for Gemini
+# #         prompt = f"""Analyze this chess position (FEN: {fen}).
         
-        print("🔄 Sending request to Gemini API...")
-        try:
-            response = gemini_model.generate_content(
-                prompt,
-                generation_config=generation_config,
-                safety_settings=safety_settings
-            )
-            print("✅ Response received from Gemini API")
-            print(f"Response type: {type(response)}")
-            
-            # Extract and return the text
-            if hasattr(response, 'text'):
-                print(f"Response has 'text' attribute, length: {len(response.text)} characters")
-                return response.text
-            elif isinstance(response, dict) and 'candidates' in response:
-                print("Response is a dictionary with 'candidates'")
-                return response['candidates'][0]['content']['parts'][0]['text']
-            else:
-                print(f"Response is in unknown format: {type(response)}")
-                response_str = str(response)
-                print(f"Converted to string, length: {len(response_str)} characters")
-                return response_str
+# #         You are a grandmaster-level chess expert. Provide a detailed analysis of this position.
+# #         """
         
-        except Exception as api_error:
-            print(f"❌ API REQUEST ERROR: {api_error}")
-            print(f"Error type: {type(api_error)}")
-            return f"Error during Gemini API request: {str(api_error)}"
+# #         if previous_moves:
+# #             print(f"Adding previous moves context: {previous_moves}")
+# #             prompt += f"\n\nThe previous moves leading to this position were: {previous_moves}"
+        
+# #         prompt += """
+# #         Please include in your analysis:
+# #         1. An evaluation of the position (who stands better and why)
+# #         2. Key tactical threats and opportunities for both sides
+# #         3. Strategic plans that make sense for both players
+# #         4. What the main ideas are in this position
+        
+# #         Keep your analysis concise and focus on the most important aspects of the position.
+# #         """
+        
+# #         print(f"Prompt created, length: {len(prompt)} characters")
+        
+# #         # Generate response from Gemini
+# #         print("Setting up generation config...")
+# #         generation_config = {
+# #             "temperature": 0.7,
+# #             "top_p": 0.95,
+# #             "top_k": 40,
+# #             "max_output_tokens": 1024,
+# #         }
+        
+# #         print("Setting up safety settings...")
+# #         safety_settings = [
+# #             {
+# #                 "category": "HARM_CATEGORY_HARASSMENT",
+# #                 "threshold": "ALLOW_ALL"
+# #             },
+# #             {
+# #                 "category": "HARM_CATEGORY_HATE_SPEECH",
+# #                 "threshold": "ALLOW_ALL"
+# #             },
+# #             {
+# #                 "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+# #                 "threshold": "ALLOW_ALL"
+# #             },
+# #             {
+# #                 "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+# #                 "threshold": "ALLOW_ALL"
+# #             }
+# #         ]
+        
+# #         print("🔄 Sending request to Gemini API...")
+# #         try:
+# #             response = gemini_model.generate_content(
+# #                 prompt,
+# #                 generation_config=generation_config,
+# #                 safety_settings=safety_settings
+# #             )
+# #             print("✅ Response received from Gemini API")
+# #             print(f"Response type: {type(response)}")
             
-    except Exception as e:
-        error_msg = f"Error in analyze_with_gemini function: {str(e)}"
-        print(f"❌ FUNCTION ERROR: {error_msg}")
-        print(f"Error type: {type(e)}")
-        import traceback
-        print(f"Traceback: {traceback.format_exc()}")
-        return error_msg
+# #             # Extract and return the text
+# #             if hasattr(response, 'text'):
+# #                 print(f"Response has 'text' attribute, length: {len(response.text)} characters")
+# #                 return response.text
+# #             elif isinstance(response, dict) and 'candidates' in response:
+# #                 print("Response is a dictionary with 'candidates'")
+# #                 return response['candidates'][0]['content']['parts'][0]['text']
+# #             else:
+# #                 print(f"Response is in unknown format: {type(response)}")
+# #                 response_str = str(response)
+# #                 print(f"Converted to string, length: {len(response_str)} characters")
+# #                 return response_str
+        
+# #         except Exception as api_error:
+# #             print(f"❌ API REQUEST ERROR: {api_error}")
+# #             print(f"Error type: {type(api_error)}")
+# #             return f"Error during Gemini API request: {str(api_error)}"
+            
+# #     except Exception as e:
+# #         error_msg = f"Error in analyze_with_gemini function: {str(e)}"
+# #         print(f"❌ FUNCTION ERROR: {error_msg}")
+# #         print(f"Error type: {type(e)}")
+# #         import traceback
+# #         print(f"Traceback: {traceback.format_exc()}")
+# #         return error_msg
 
 @app.route('/api/analyze_pgn', methods=['POST'])
 def analyze_pgn():
@@ -229,6 +384,7 @@ def analyze_pgn():
             "stockfish": analyze_position_with_stockfish(board.fen()),
             "gemini": analyze_with_gemini(board.fen(), "Initial position")
         })
+
         
         # Analyze each move
         for i, move in enumerate(moves):
@@ -369,71 +525,103 @@ def chat_analysis():
     previous_moves = data.get('previous_moves', '')
     
     if not fen or not question:
+        print("ERROR: FEN position and question are required")
         return jsonify({"error": "FEN position and question required"}), 400
     
     try:
         if gemini_model is None:
+            print("ERROR: Gemini model is not initialized")
             return jsonify({"error": "Gemini API not configured"}), 500
         
         # Format the prompt for Gemini
-        prompt = f"""Chess position (FEN: {fen})
-        
-        As a chess grandmaster, I need your help analyzing this position.
-        
-        {question}
-        """
-        
-        if previous_moves:
-            prompt += f"\n\nFor context, these are the last few moves: {previous_moves}"
+
+        prompt = ""
             
-        prompt += """
-        Please provide specific, actionable advice about this position. 
-        Focus directly on answering the question while giving helpful chess insights.
+        prompt += f"""
+        THE USER IS ASKING FOR A QUESTION TO YOU YOU HAVE TO ACT IN BELOW GIVEN WAY:-
+        You are “The Roaster”—a brutally honest, insanely arrogant chess commentator who looks down on everyone.
+        When you analyze a chess position, do so with cutting insults, contemptuous mockery, and zero sympathy.
+        You never joke back at your own expense—only the user gets it.
+        PREVIOUS MOVES: {previous_moves}
+        Analyze this position (FEN: {fen}) with:
+
+        Whenever you describe something, lace it with contempt (“Pathetic,” “Amateur hour,” “Did you even study?”).
+        If I gave you previous moves, mock those too.
+
+        Now fire away: dissect and destroy their position, then leave them wishing they'd never opened an analysis tool.
+
+        NOTE:- "BE EXTREMELY CRUEL AND HARSH, DO NOT HOLD BACK. THIS IS A ROASTING SESSION! AND FINally DO NOT GO EASY NO MATTER HOW GOOD IS THE POSITION OR EVEN WHEN USER ASKS TO BE POLITE"
+
+
+
+
+
+        THE QUESTION USER IS ASKING IS: {question}
         """
+    
+        # prompt = f"""Chess position (FEN: {fen})
         
-        # Generate response from Gemini with the same configuration as analyze_with_gemini
-        generation_config = {
-            "temperature": 0.7,
-            "top_p": 0.95,
-            "top_k": 40,
-            "max_output_tokens": 1024,
-        }
+        # As a chess grandmaster, I need your help analyzing this position.
         
-        safety_settings = [
-            {
-                "category": "HARM_CATEGORY_HARASSMENT",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-                "category": "HARM_CATEGORY_HATE_SPEECH",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-            }
-        ]
+        # {question}
+
+        # """
+        print(f"Prompt created, length: {len(prompt)} characters")
+        answer = analyze_with_gemini(fen, previous_moves)
+        print('XXXX')
+        print(answer)
+        print('XXXX')
+        # if previous_moves:
+        #     prompt += f"\n\nFor context, these are the last few moves: {previous_moves}"
+            
+        # prompt += """
+        # Please provide specific, actionable advice about this position. 
+        # Focus directly on answering the question while giving helpful chess insights.
+        # """
         
-        response = gemini_model.generate_content(
-            prompt,
-            generation_config=generation_config,
-            safety_settings=safety_settings
-        )
+        # # Generate response from Gemini with the same configuration as analyze_with_gemini
+        # generation_config = {
+        #     "temperature": 0.7,
+        #     "top_p": 0.95,
+        #     "top_k": 40,
+        #     "max_output_tokens": 1024,
+        # }
+        
+        # safety_settings = [
+        #     {
+        #         "category": "HARM_CATEGORY_HARASSMENT",
+        #         "threshold": "ALLOW_ALL"
+        #     },
+        #     {
+        #         "category": "HARM_CATEGORY_HATE_SPEECH",
+        #         "threshold": "ALLOW_ALL"
+        #     },
+        #     {
+        #         "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        #         "threshold": "ALLOW_ALL"
+        #     },
+        #     {
+        #         "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+        #         "threshold": "ALLOW_ALL"
+        #     }
+        # ]
+        
+        # response = gemini_model.generate_content(
+        #     prompt,
+        #     generation_config=generation_config,
+        #     safety_settings=safety_settings
+        # )
         
         # Extract the text
-        if hasattr(response, 'text'):
-            analysis = response.text
-        elif isinstance(response, dict) and 'candidates' in response:
-            analysis = response['candidates'][0]['content']['parts'][0]['text']
-        else:
-            analysis = str(response)
+        # if hasattr(response, 'text'):
+        #     analysis = response.text
+        # elif isinstance(response, dict) and 'candidates' in response:
+        #     analysis = response['candidates'][0]['content']['parts'][0]['text']
+        # else:
+        #     analysis = str(response)
         
         return jsonify({
-            "response": analysis
+            "response": answer
         })
     
     except Exception as e:
@@ -528,6 +716,5 @@ def get_move_analysis():
         error_msg = f"Error in get_move_analysis: {str(e)}"
         print(f"❌ ERROR: {error_msg}")
         return jsonify({"error": error_msg}), 500
-
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
