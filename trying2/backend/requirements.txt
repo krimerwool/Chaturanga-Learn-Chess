@@ -1,0 +1,7 @@
+flask==2.3.3
+flask-cors==4.0.0
+python-chess==1.1.0
+requests==2.31.0
+stockfish==3.28.0
+google-generativeai==0.7.1
+python-dotenv==1.1.0

@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Star field styles */
+#star-field {
+  background-color: #000;
+  overflow: hidden;
+}
+
+.star {
+  width: 2px;
+  height: 2px;
+  background-color: white;
+  border-radius: 50%;
+}
+
+.star.red {
+  background-color: red;
+}
+
+.star.yellow {
+  background-color: yellow;
+}
+
+.star.blue {
+  background-color: blue;
+}
+
+.star.near {
+  width: 3px;
+  height: 3px;
+}
+
+.star.far {
+  width: 1px;
+  height: 1px;
+}
