@@ -1,0 +1,24 @@
+# Environment files
+.env
+.env.*  # optional: ignore all .env variants
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Node dependencies (for frontend if accidentally placed in root)
+node_modules/
+
+# Docker
+*.pid
+*.pid.lock

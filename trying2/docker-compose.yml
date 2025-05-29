@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - chess-network
+    environment:
+      - NODE_ENV=production
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    networks:
+      - chess-network
+    environment:
+      - FLASK_ENV=production
+      # Add Gemini API key if needed
+      # - GEMINI_API_KEY=your-api-key
+
+networks:
+  chess-network:
+    driver: bridge

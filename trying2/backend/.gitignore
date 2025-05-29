@@ -1,0 +1,20 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# IDEs and editors
+.vscode/
+.idea/
+
+# Environment
+.env
+
+# Stockfish binary
+stockfish/stockfish_*.exe
+stockfish/stockfish  # Linux/Mac binary

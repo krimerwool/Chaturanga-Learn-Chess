@@ -600,7 +600,7 @@ function App() {
             )}
 
             <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
-              <h3 className="text-lg text-[#eeeed2] font-semibold mb-3">Chat with Gemini</h3>
+              <h3 className="text-lg text-[#eeeed2] font-semibold mb-3">Chat with Chaturanga</h3>
               <div className="max-h-48 overflow-y-auto p-3 bg-gray-700 rounded-md mb-3">
                 {chatHistory.map((msg, index) => (
                   <div
